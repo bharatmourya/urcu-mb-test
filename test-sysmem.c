@@ -46,7 +46,8 @@ int main(){
 	readers = (pthread_t *)malloc(sizeof(pthread_t)*100);
 	writers = (pthread_t *)malloc(sizeof(pthread_t)*100);
 	long int *readers_id,*writers_id;
-	scanf("%d %ld %ld %ld",&flag_rcu,&nreaders,&nwriters,&size);	
+	scanf("%ld %ld %ld",&nreaders,&nwriters,&size);	
+	flag_rcu = 1;
 	readers_id = (long int *)malloc(sizeof(long int)*100);
 	writers_id = (long int *)malloc(sizeof(long int)*100);
 	struct mynode *node,*n;

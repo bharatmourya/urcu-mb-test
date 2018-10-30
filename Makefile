@@ -1,5 +1,6 @@
 main: main.c
-	g++ -pthread -lurcu main.c -o main
-
+	g++ -std=c++14 -pthread  test-sysmem.c -lurcu -o test
+	g++ -std=c++14 -pthread  rw-lock.c -lurcu -o rwlock
+	g++ -std=c++14 -pthread  mutex.c -lurcu -o mutex
 clean:
-	-rm main
+	-rm test rwlock mutex
