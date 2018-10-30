@@ -29,8 +29,6 @@ yield points can be a good problem as reduces a huge overhead.
 Setup is similar to the previous experiment but now we see how read throughput is getting effected as well as the entire
 execution time compared to a RW lock?
 
-TODO: see boost:thread, shared_lock for an implementation of R/W lock.
-
 Do it for QSBR and a RW lock?
 
 no-of readers     : 99    90    80    70    60

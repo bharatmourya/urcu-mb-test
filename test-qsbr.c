@@ -1,7 +1,7 @@
 #include <chrono>  // for time
 #include <mutex>   // for std::mutex
 #include <shared_mutex> // for reader-writer lock
-#include <urcu.h>  // for urcu-mb
+#include <urcu-qsbr.h>  // for urcu-qsbr
 #include <pthread.h>
 #include <iostream>
 #include <unistd.h>
@@ -46,7 +46,8 @@ int main(){
 	readers = (pthread_t *)malloc(sizeof(pthread_t)*100);
 	writers = (pthread_t *)malloc(sizeof(pthread_t)*100);
 	long int *readers_id,*writers_id;
-	scanf("%d %ld %ld %ld",&flag_rcu,&nreaders,&nwriters,&size);	
+	scanf("%ld %ld %ld",&nreaders,&nwriters,&size);
+	flag_rcu = 0;	
 	readers_id = (long int *)malloc(sizeof(long int)*100);
 	writers_id = (long int *)malloc(sizeof(long int)*100);
 	struct mynode *node,*n;
@@ -92,27 +93,24 @@ void *reader_fn(void *arg){
 	
 	long int t_id = *(long *)arg;
 	struct mynode *node;
-//	writer_mtx.lock();
+	rcu_register_thread();
 	for(int i = 0;i < nreaders;i++){
-		if(!flag_rcu)	
-			shared_lock<shared_timed_mutex> lock(shrd_mtx);
-		rcu_read_lock();
 		cds_list_for_each_entry(node, &mylist, node) {
 			int temp =  node->value;
 		}
-		rcu_read_unlock();
+		
+	rcu_quiescent_state();
 	}
-//	writer_mtx.unlock();
 }
 
 void *writer_fn(void *arg){
 	int t_id = *(int *)arg;
 	struct mynode *node,*n;
-//	writer_mtx.lock();	
+	rcu_register_thread();
 	for(int i = 0; i < nwriters;i++){
 		usleep(100);
 		unique_lock<shared_timed_mutex> lock(shrd_mtx);
-		rcu_read_lock();
+		
 			cds_list_for_each_entry_safe(node, n, &mylist, node) {
 				if(node->value == rand()%size){
 					struct mynode *new_node;
@@ -125,7 +123,6 @@ void *writer_fn(void *arg){
 					call_rcu(&node->rcu_head, free_node_rcu);
 				}
 			}	
-		rcu_read_unlock();
-	}	
-//	writer_mtx.unlock();
+		rcu_quiescent_state();
+	}
 }
