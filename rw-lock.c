@@ -59,7 +59,8 @@ int main(){
 	auto finish = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> elapsed = finish - start;
-	std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+	cout<<fixed;
+	std::cout << "Elapsed time: " << nthreads*nreaders/elapsed.count() << " s\n";
 	return 0;
 }
 
