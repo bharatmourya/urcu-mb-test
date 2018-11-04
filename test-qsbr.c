@@ -99,8 +99,8 @@ void *reader_fn(void *arg){
 			int temp =  node->value;
 		}
 		
-	rcu_quiescent_state();
 	}
+		rcu_quiescent_state();
 }
 
 void *writer_fn(void *arg){

@@ -29,7 +29,7 @@ struct thread_input{
 };
 
 CDS_LIST_HEAD(mylist);
-long int nreaders,nwriters,size;
+long int nreaders,nwriters,size,nthreads;
 bool flag_rcu;
 mutex writer_mtx;
 shared_timed_mutex shrd_mtx;
@@ -43,13 +43,13 @@ void free_node_rcu(struct rcu_head *head)
 }
 
 int main(){
-	readers = (pthread_t *)malloc(sizeof(pthread_t)*100);
-	writers = (pthread_t *)malloc(sizeof(pthread_t)*100);
+	readers = (pthread_t *)malloc(sizeof(pthread_t)*1000);
+	writers = (pthread_t *)malloc(sizeof(pthread_t)*1000);
 	long int *readers_id,*writers_id;
-	scanf("%ld %ld %ld",&nreaders,&nwriters,&size);	
+	scanf("%ld %ld %ld %ld",&nreaders,&nwriters,&size,&nthreads);	
 	flag_rcu = 1;
-	readers_id = (long int *)malloc(sizeof(long int)*100);
-	writers_id = (long int *)malloc(sizeof(long int)*100);
+	readers_id = (long int *)malloc(sizeof(long int)*1000);
+	writers_id = (long int *)malloc(sizeof(long int)*1000);
 	struct mynode *node,*n;
 
 	for(int i = 0;i < size;i++){
@@ -63,22 +63,22 @@ int main(){
 
 	auto start = std::chrono::high_resolution_clock::now();
 	long int cr=0,cw=0,flg = 0 ; // flg is set means writer else reader
-	for(long i = 0;i < 10;i++){		
+	for(long i = 0;i < nthreads;i++){		
 		readers_id[i] = i;
 		pthread_create(&readers[i],NULL,reader_fn,&readers_id[i]);
 
 		cr++;
 	}
-	for(int j = 10;j < 20;j++){
+	for(int j = nthreads;j < 2*nthreads;j++){
 		writers_id[j] = j;
 		pthread_create(&writers[j],NULL,writer_fn,&writers_id[j]);	
 		cw++;	
 	}
 	
-	for(long i = 0;i < 10;i++){
+	for(long i = 0;i < nthreads;i++){
 		pthread_join(readers[i],NULL);
 	}
-	for(long i = 10;i < 20;i++){
+	for(long i = nthreads;i < 2*nthreads;i++){
 		pthread_join(writers[i],NULL);
 	}
 	auto finish = std::chrono::high_resolution_clock::now();
@@ -111,7 +111,7 @@ void *writer_fn(void *arg){
 	struct mynode *node,*n;
 //	writer_mtx.lock();	
 	for(int i = 0; i < nwriters;i++){
-		usleep(100);
+		usleep(10);
 		unique_lock<shared_timed_mutex> lock(shrd_mtx);
 		rcu_read_lock();
 			cds_list_for_each_entry_safe(node, n, &mylist, node) {
