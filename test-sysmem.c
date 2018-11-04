@@ -84,8 +84,8 @@ int main(){
 	auto finish = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> elapsed = finish - start;
-	std::cout << std::fixed;
-	std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+	cout<<fixed;
+	std::cout << "Elapsed time: " << nthreads*nreaders/elapsed.count() << " s\n";
 //sleep(1000);	
 	return 0;
 }
@@ -112,7 +112,7 @@ void *writer_fn(void *arg){
 	struct mynode *node,*n;
 //	writer_mtx.lock();	
 	for(int i = 0; i < nwriters;i++){
-		usleep(10);
+//		usleep(10);
 		unique_lock<shared_timed_mutex> lock(shrd_mtx);
 		rcu_read_lock();
 			cds_list_for_each_entry_safe(node, n, &mylist, node) {
